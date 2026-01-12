@@ -11,6 +11,7 @@ interface GroomingCardProps {
   daysRemaining: number;
   lastCompleted: Date | null;
   onComplete: () => void;
+  reminderPeriod?: number;
 }
 
 const GroomingCard = ({
@@ -20,8 +21,9 @@ const GroomingCard = ({
   daysRemaining,
   lastCompleted,
   onComplete,
+  reminderPeriod = 40,
 }: GroomingCardProps) => {
-  const progress = Math.max(0, ((40 - daysRemaining) / 40) * 100);
+  const progress = Math.max(0, ((reminderPeriod - daysRemaining) / reminderPeriod) * 100);
   const isUrgent = daysRemaining <= 5;
   const isOverdue = daysRemaining <= 0;
 

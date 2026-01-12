@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Scissors, Hand, CircleDot, Sparkle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/Header";
@@ -5,6 +6,7 @@ import GroomingCard from "@/components/GroomingCard";
 import SettingsDialog from "@/components/SettingsDialog";
 import { Button } from "@/components/ui/button";
 import { useGroomingData } from "@/hooks/useGroomingData";
+import { useNotifications, getNotificationsEnabled } from "@/hooks/useNotifications";
 
 const iconMap: Record<string, React.ReactNode> = {
   nails: <Hand className="h-8 w-8" />,
@@ -15,6 +17,10 @@ const iconMap: Record<string, React.ReactNode> = {
 
 const Index = () => {
   const { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod } = useGroomingData();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(getNotificationsEnabled);
+  
+  // Initialize notifications
+  useNotifications(items, getDaysRemaining, notificationsEnabled);
 
   const handleComplete = (id: string, title: string) => {
     markComplete(id);
@@ -70,6 +76,7 @@ const Index = () => {
                 daysRemaining={getDaysRemaining(item.lastCompleted)}
                 lastCompleted={item.lastCompleted}
                 onComplete={() => handleComplete(item.id, item.title)}
+                reminderPeriod={reminderPeriod}
               />
             </div>
           ))}
@@ -83,7 +90,8 @@ const Index = () => {
             </h2>
             <SettingsDialog 
               reminderPeriod={reminderPeriod} 
-              onUpdatePeriod={updateReminderPeriod} 
+              onUpdatePeriod={updateReminderPeriod}
+              onNotificationsChange={setNotificationsEnabled}
             />
           </div>
           <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
