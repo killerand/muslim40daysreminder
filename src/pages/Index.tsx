@@ -2,6 +2,7 @@ import { Scissors, Hand, CircleDot, Sparkle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import GroomingCard from "@/components/GroomingCard";
+import SettingsDialog from "@/components/SettingsDialog";
 import { Button } from "@/components/ui/button";
 import { useGroomingData } from "@/hooks/useGroomingData";
 
@@ -13,7 +14,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Index = () => {
-  const { items, markComplete, getDaysRemaining, resetAll } = useGroomingData();
+  const { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod } = useGroomingData();
 
   const handleComplete = (id: string, title: string) => {
     markComplete(id);
@@ -76,10 +77,16 @@ const Index = () => {
 
         {/* Info section */}
         <div className="mt-12 rounded-xl border border-border/50 bg-card p-6 text-center">
-          <h2 className="font-display text-xl font-semibold text-foreground">
-            The 40-Day Sunnah
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              The {reminderPeriod}-Day Reminder
+            </h2>
+            <SettingsDialog 
+              reminderPeriod={reminderPeriod} 
+              onUpdatePeriod={updateReminderPeriod} 
+            />
+          </div>
+          <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
             The Prophet Muhammad ﷺ set a time limit for Muslims to trim their nails, 
             shave their pubic hair, pluck their armpit hair, and trim their mustaches. 
             Anas ibn Malik reported that the time limit was forty days.
