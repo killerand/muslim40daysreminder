@@ -8,6 +8,8 @@ export interface GroomingItem {
 }
 
 const STORAGE_KEY = "grooming-reminder-data";
+const PERIOD_KEY = "grooming-reminder-period";
+const DEFAULT_PERIOD = 40;
 
 const defaultItems: GroomingItem[] = [
   { id: "nails", title: "Trim Nails", arabicTitle: "تقليم الأظافر", lastCompleted: null },
@@ -29,9 +31,18 @@ export const useGroomingData = () => {
     return defaultItems;
   });
 
+  const [reminderPeriod, setReminderPeriod] = useState<number>(() => {
+    const stored = localStorage.getItem(PERIOD_KEY);
+    return stored ? parseInt(stored, 10) : DEFAULT_PERIOD;
+  });
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem(PERIOD_KEY, reminderPeriod.toString());
+  }, [reminderPeriod]);
 
   const markComplete = (id: string) => {
     setItems((prev) =>
@@ -44,7 +55,7 @@ export const useGroomingData = () => {
   const getDaysRemaining = (lastCompleted: Date | null): number => {
     if (!lastCompleted) return 0; // Overdue if never completed
     const now = new Date();
-    const diffTime = lastCompleted.getTime() + 40 * 24 * 60 * 60 * 1000 - now.getTime();
+    const diffTime = lastCompleted.getTime() + reminderPeriod * 24 * 60 * 60 * 1000 - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(0, diffDays);
   };
@@ -53,5 +64,10 @@ export const useGroomingData = () => {
     setItems(defaultItems);
   };
 
-  return { items, markComplete, getDaysRemaining, resetAll };
+  const updateReminderPeriod = (days: number) => {
+    const validDays = Math.max(1, Math.min(365, days));
+    setReminderPeriod(validDays);
+  };
+
+  return { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod };
 };
