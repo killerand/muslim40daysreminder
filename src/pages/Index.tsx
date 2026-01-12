@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import Header from "@/components/Header";
 import GroomingCard from "@/components/GroomingCard";
 import SettingsDialog from "@/components/SettingsDialog";
+import HistoryDialog from "@/components/HistoryDialog";
 import { Button } from "@/components/ui/button";
 import { useGroomingData } from "@/hooks/useGroomingData";
 import { useNotifications, getNotificationsEnabled } from "@/hooks/useNotifications";
@@ -16,7 +17,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Index = () => {
-  const { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod } = useGroomingData();
+  const { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod, clearHistory } = useGroomingData();
   const [notificationsEnabled, setNotificationsEnabled] = useState(getNotificationsEnabled);
   
   // Initialize notifications
@@ -104,8 +105,9 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Reset button */}
-        <div className="mt-8 flex justify-center">
+        {/* Action buttons */}
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <HistoryDialog items={items} onClearHistory={clearHistory} />
           <Button
             variant="outline"
             onClick={handleReset}
