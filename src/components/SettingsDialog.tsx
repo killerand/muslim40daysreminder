@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Settings, Bell, BellOff } from "lucide-react";
+import { Settings, Bell, BellOff, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +18,13 @@ import {
   getNotificationsEnabled,
   setNotificationsEnabled,
 } from "@/hooks/useNotifications";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SettingsDialogProps {
   reminderPeriod: number;
@@ -35,6 +43,12 @@ const SettingsDialog = ({
     getNotificationsEnabled
   );
   const [notificationsSupported, setNotificationsSupported] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setNotificationsSupported("Notification" in window);
@@ -116,6 +130,52 @@ const SettingsDialog = ({
               task individually using the settings icon on each card.
             </p>
           </div>
+
+          {/* Theme Selection */}
+          {mounted && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {theme === "dark" ? (
+                    <Moon className="h-4 w-4 text-primary" />
+                  ) : theme === "light" ? (
+                    <Sun className="h-4 w-4 text-primary" />
+                  ) : (
+                    <Monitor className="h-4 w-4 text-primary" />
+                  )}
+                  <Label>Appearance</Label>
+                </div>
+                <Select value={theme} onValueChange={setTheme}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">
+                      <div className="flex items-center gap-2">
+                        <Sun className="h-4 w-4" />
+                        Light
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="dark">
+                      <div className="flex items-center gap-2">
+                        <Moon className="h-4 w-4" />
+                        Dark
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="system">
+                      <div className="flex items-center gap-2">
+                        <Monitor className="h-4 w-4" />
+                        System
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Choose your preferred color scheme.
+              </p>
+            </div>
+          )}
 
           {notificationsSupported && (
             <div className="space-y-2">
