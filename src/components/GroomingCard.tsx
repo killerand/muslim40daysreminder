@@ -1,6 +1,10 @@
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import ProgressRing from "./ProgressRing";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +15,8 @@ interface GroomingCardProps {
   daysRemaining: number;
   lastCompleted: Date | null;
   onComplete: () => void;
-  reminderPeriod?: number;
+  reminderPeriod: number;
+  onUpdatePeriod: (days: number) => void;
 }
 
 const GroomingCard = ({
@@ -21,11 +26,21 @@ const GroomingCard = ({
   daysRemaining,
   lastCompleted,
   onComplete,
-  reminderPeriod = 40,
+  reminderPeriod,
+  onUpdatePeriod,
 }: GroomingCardProps) => {
+  const [localPeriod, setLocalPeriod] = useState(reminderPeriod);
   const progress = Math.max(0, ((reminderPeriod - daysRemaining) / reminderPeriod) * 100);
   const isUrgent = daysRemaining <= 5;
   const isOverdue = daysRemaining <= 0;
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      setLocalPeriod(reminderPeriod);
+    } else if (localPeriod !== reminderPeriod) {
+      onUpdatePeriod(localPeriod);
+    }
+  };
 
   return (
     <Card
@@ -35,6 +50,39 @@ const GroomingCard = ({
         isOverdue && "ring-2 ring-destructive/50"
       )}
     >
+      {/* Settings button */}
+      <Popover onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64" align="end">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                Reminder Period: {localPeriod} days
+              </Label>
+              <Slider
+                value={[localPeriod]}
+                onValueChange={([value]) => setLocalPeriod(value)}
+                min={1}
+                max={60}
+                step={1}
+                className="w-full"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Set a custom reminder period for {title.toLowerCase()}.
+            </p>
+          </div>
+        </PopoverContent>
+      </Popover>
+
       {/* Decorative corner */}
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-gold/20 to-transparent" />
       

@@ -112,8 +112,8 @@ const SettingsDialog = ({
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              The traditional time limit set by the Prophet ﷺ is 40 days, but
-              you can adjust this based on your personal needs.
+              Sets the default period for all tasks. You can also customize each
+              task individually using the settings icon on each card.
             </p>
           </div>
 
