@@ -6,6 +6,7 @@ export interface GroomingItem {
   arabicTitle: string;
   lastCompleted: Date | null;
   history: Date[];
+  reminderPeriod: number;
 }
 
 const STORAGE_KEY = "grooming-reminder-data";
@@ -13,10 +14,10 @@ const PERIOD_KEY = "grooming-reminder-period";
 const DEFAULT_PERIOD = 40;
 
 const defaultItems: GroomingItem[] = [
-  { id: "nails", title: "Trim Nails", arabicTitle: "تقليم الأظافر", lastCompleted: null, history: [] },
-  { id: "armpit", title: "Armpit Hair", arabicTitle: "نتف الإبط", lastCompleted: null, history: [] },
-  { id: "pubic", title: "Pubic Hair", arabicTitle: "حلق العانة", lastCompleted: null, history: [] },
-  { id: "mustache", title: "Trim Mustache", arabicTitle: "قص الشارب", lastCompleted: null, history: [] },
+  { id: "nails", title: "Trim Nails", arabicTitle: "تقليم الأظافر", lastCompleted: null, history: [], reminderPeriod: DEFAULT_PERIOD },
+  { id: "armpit", title: "Armpit Hair", arabicTitle: "نتف الإبط", lastCompleted: null, history: [], reminderPeriod: DEFAULT_PERIOD },
+  { id: "pubic", title: "Pubic Hair", arabicTitle: "حلق العانة", lastCompleted: null, history: [], reminderPeriod: DEFAULT_PERIOD },
+  { id: "mustache", title: "Trim Mustache", arabicTitle: "قص الشارب", lastCompleted: null, history: [], reminderPeriod: DEFAULT_PERIOD },
 ];
 
 export const useGroomingData = () => {
@@ -28,12 +29,13 @@ export const useGroomingData = () => {
         ...item,
         lastCompleted: item.lastCompleted ? new Date(item.lastCompleted) : null,
         history: (item.history || []).map((d: string) => new Date(d)),
+        reminderPeriod: item.reminderPeriod ?? DEFAULT_PERIOD,
       }));
     }
     return defaultItems;
   });
 
-  const [reminderPeriod, setReminderPeriod] = useState<number>(() => {
+  const [globalReminderPeriod, setGlobalReminderPeriod] = useState<number>(() => {
     const stored = localStorage.getItem(PERIOD_KEY);
     return stored ? parseInt(stored, 10) : DEFAULT_PERIOD;
   });
@@ -43,8 +45,8 @@ export const useGroomingData = () => {
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem(PERIOD_KEY, reminderPeriod.toString());
-  }, [reminderPeriod]);
+    localStorage.setItem(PERIOD_KEY, globalReminderPeriod.toString());
+  }, [globalReminderPeriod]);
 
   const markComplete = (id: string) => {
     const now = new Date();
@@ -57,10 +59,10 @@ export const useGroomingData = () => {
     );
   };
 
-  const getDaysRemaining = (lastCompleted: Date | null): number => {
-    if (!lastCompleted) return 0;
+  const getDaysRemaining = (item: GroomingItem): number => {
+    if (!item.lastCompleted) return 0;
     const now = new Date();
-    const diffTime = lastCompleted.getTime() + reminderPeriod * 24 * 60 * 60 * 1000 - now.getTime();
+    const diffTime = item.lastCompleted.getTime() + item.reminderPeriod * 24 * 60 * 60 * 1000 - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(0, diffDays);
   };
@@ -69,9 +71,22 @@ export const useGroomingData = () => {
     setItems(defaultItems);
   };
 
-  const updateReminderPeriod = (days: number) => {
+  const updateGlobalReminderPeriod = (days: number) => {
     const validDays = Math.max(1, Math.min(365, days));
-    setReminderPeriod(validDays);
+    setGlobalReminderPeriod(validDays);
+    // Also update all items to use this new global period
+    setItems((prev) =>
+      prev.map((item) => ({ ...item, reminderPeriod: validDays }))
+    );
+  };
+
+  const updateItemReminderPeriod = (id: string, days: number) => {
+    const validDays = Math.max(1, Math.min(365, days));
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, reminderPeriod: validDays } : item
+      )
+    );
   };
 
   const clearHistory = (id: string) => {
@@ -82,5 +97,14 @@ export const useGroomingData = () => {
     );
   };
 
-  return { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod, clearHistory };
+  return { 
+    items, 
+    markComplete, 
+    getDaysRemaining, 
+    resetAll, 
+    globalReminderPeriod, 
+    updateGlobalReminderPeriod, 
+    updateItemReminderPeriod,
+    clearHistory 
+  };
 };

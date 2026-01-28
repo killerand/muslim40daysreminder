@@ -7,7 +7,7 @@ const URGENT_THRESHOLD = 5; // days
 
 export const useNotifications = (
   items: GroomingItem[],
-  getDaysRemaining: (lastCompleted: Date | null) => number,
+  getDaysRemaining: (item: GroomingItem) => number,
   enabled: boolean
 ) => {
   const hasCheckedToday = useRef(false);
@@ -51,10 +51,10 @@ export const useNotifications = (
     }
 
     const overdueItems = items.filter(
-      (item) => getDaysRemaining(item.lastCompleted) === 0
+      (item) => getDaysRemaining(item) === 0
     );
     const urgentItems = items.filter((item) => {
-      const days = getDaysRemaining(item.lastCompleted);
+      const days = getDaysRemaining(item);
       return days > 0 && days <= URGENT_THRESHOLD;
     });
 

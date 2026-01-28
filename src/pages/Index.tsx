@@ -17,10 +17,10 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const Index = () => {
-  const { items, markComplete, getDaysRemaining, resetAll, reminderPeriod, updateReminderPeriod, clearHistory } = useGroomingData();
+  const { items, markComplete, getDaysRemaining, resetAll, globalReminderPeriod, updateGlobalReminderPeriod, updateItemReminderPeriod, clearHistory } = useGroomingData();
   const [notificationsEnabled, setNotificationsEnabled] = useState(getNotificationsEnabled);
   
-  // Initialize notifications
+  // Initialize notifications with updated getDaysRemaining signature
   useNotifications(items, getDaysRemaining, notificationsEnabled);
 
   const handleComplete = (id: string, title: string) => {
@@ -36,9 +36,9 @@ const Index = () => {
   };
 
   // Calculate overall status
-  const overdueTasks = items.filter((item) => getDaysRemaining(item.lastCompleted) === 0);
+  const overdueTasks = items.filter((item) => getDaysRemaining(item) === 0);
   const urgentTasks = items.filter((item) => {
-    const days = getDaysRemaining(item.lastCompleted);
+    const days = getDaysRemaining(item);
     return days > 0 && days <= 5;
   });
 
@@ -74,10 +74,11 @@ const Index = () => {
                 title={item.title}
                 arabicTitle={item.arabicTitle}
                 icon={iconMap[item.id]}
-                daysRemaining={getDaysRemaining(item.lastCompleted)}
+                daysRemaining={getDaysRemaining(item)}
                 lastCompleted={item.lastCompleted}
                 onComplete={() => handleComplete(item.id, item.title)}
-                reminderPeriod={reminderPeriod}
+                reminderPeriod={item.reminderPeriod}
+                onUpdatePeriod={(days) => updateItemReminderPeriod(item.id, days)}
               />
             </div>
           ))}
@@ -87,11 +88,11 @@ const Index = () => {
         <div className="mt-12 rounded-xl border border-border/50 bg-card p-6 text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
             <h2 className="font-display text-xl font-semibold text-foreground">
-              The {reminderPeriod}-Day Reminder
+              The Sunnah Reminder
             </h2>
             <SettingsDialog 
-              reminderPeriod={reminderPeriod} 
-              onUpdatePeriod={updateReminderPeriod}
+              reminderPeriod={globalReminderPeriod} 
+              onUpdatePeriod={updateGlobalReminderPeriod}
               onNotificationsChange={setNotificationsEnabled}
             />
           </div>
