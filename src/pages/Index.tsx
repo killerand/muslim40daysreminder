@@ -5,7 +5,9 @@ import Header from "@/components/Header";
 import GroomingCard from "@/components/GroomingCard";
 import SettingsDialog from "@/components/SettingsDialog";
 import HistoryDialog from "@/components/HistoryDialog";
+import PeriodTracker from "@/components/PeriodTracker";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGroomingData } from "@/hooks/useGroomingData";
 import { useNotifications, getNotificationsEnabled } from "@/hooks/useNotifications";
 
@@ -19,8 +21,9 @@ const iconMap: Record<string, React.ReactNode> = {
 const Index = () => {
   const { items, markComplete, getDaysRemaining, resetAll, globalReminderPeriod, updateGlobalReminderPeriod, updateItemReminderPeriod, clearHistory } = useGroomingData();
   const [notificationsEnabled, setNotificationsEnabled] = useState(getNotificationsEnabled);
+  const [activeTab, setActiveTab] = useState("grooming");
   
-  // Initialize notifications with updated getDaysRemaining signature
+  // Initialize notifications
   useNotifications(items, getDaysRemaining, notificationsEnabled);
 
   const handleComplete = (id: string, title: string) => {
@@ -47,77 +50,97 @@ const Index = () => {
       <div className="container mx-auto max-w-5xl px-4 pb-12">
         <Header />
 
-        {/* Status banner */}
-        {(overdueTasks.length > 0 || urgentTasks.length > 0) && (
-          <div className="mb-8 animate-fade-in rounded-lg border border-accent/30 bg-accent/10 p-4 text-center">
-            {overdueTasks.length > 0 && (
-              <p className="font-medium text-foreground">
-                <span className="text-destructive">{overdueTasks.length} task(s)</span> are overdue!
-              </p>
-            )}
-            {urgentTasks.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                {urgentTasks.length} task(s) due within 5 days
-              </p>
-            )}
-          </div>
-        )}
+        {/* Tab Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="grooming" className="font-display">
+              Sunnah Grooming
+            </TabsTrigger>
+            <TabsTrigger value="period" className="font-display">
+              Period Tracker
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Grooming cards grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <GroomingCard
-                title={item.title}
-                arabicTitle={item.arabicTitle}
-                icon={iconMap[item.id]}
-                daysRemaining={getDaysRemaining(item)}
-                lastCompleted={item.lastCompleted}
-                onComplete={() => handleComplete(item.id, item.title)}
-                reminderPeriod={item.reminderPeriod}
-                onUpdatePeriod={(days) => updateItemReminderPeriod(item.id, days)}
-              />
+          {/* Grooming Tab */}
+          <TabsContent value="grooming" className="mt-6 space-y-8">
+            {/* Status banner */}
+            {(overdueTasks.length > 0 || urgentTasks.length > 0) && (
+              <div className="animate-fade-in rounded-lg border border-accent/30 bg-accent/10 p-4 text-center">
+                {overdueTasks.length > 0 && (
+                  <p className="font-medium text-foreground">
+                    <span className="text-destructive">{overdueTasks.length} task(s)</span> are overdue!
+                  </p>
+                )}
+                {urgentTasks.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {urgentTasks.length} task(s) due within 5 days
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Grooming cards grid */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {items.map((item, index) => (
+                <div
+                  key={item.id}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <GroomingCard
+                    title={item.title}
+                    arabicTitle={item.arabicTitle}
+                    icon={iconMap[item.id]}
+                    daysRemaining={getDaysRemaining(item)}
+                    lastCompleted={item.lastCompleted}
+                    onComplete={() => handleComplete(item.id, item.title)}
+                    reminderPeriod={item.reminderPeriod}
+                    onUpdatePeriod={(days) => updateItemReminderPeriod(item.id, days)}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Info section */}
-        <div className="mt-12 rounded-xl border border-border/50 bg-card p-6 text-center">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <h2 className="font-display text-xl font-semibold text-foreground">
-              The Sunnah Reminder
-            </h2>
-            <SettingsDialog 
-              reminderPeriod={globalReminderPeriod} 
-              onUpdatePeriod={updateGlobalReminderPeriod}
-              onNotificationsChange={setNotificationsEnabled}
-            />
-          </div>
-          <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
-            The Prophet Muhammad ﷺ set a time limit for Muslims to trim their nails, 
-            shave their pubic hair, pluck their armpit hair, and trim their mustaches. 
-            Anas ibn Malik reported that the time limit was forty days.
-          </p>
-          <p className="mt-2 text-xs font-medium text-primary">
-            — Sahih Muslim 258
-          </p>
-        </div>
+            {/* Info section */}
+            <div className="rounded-xl border border-border/50 bg-card p-6 text-center">
+              <div className="mb-4 flex items-center justify-center gap-2">
+                <h2 className="font-display text-xl font-semibold text-foreground">
+                  The Sunnah Reminder
+                </h2>
+                <SettingsDialog 
+                  reminderPeriod={globalReminderPeriod} 
+                  onUpdatePeriod={updateGlobalReminderPeriod}
+                  onNotificationsChange={setNotificationsEnabled}
+                />
+              </div>
+              <p className="mx-auto max-w-2xl text-sm text-muted-foreground">
+                The Prophet Muhammad ﷺ set a time limit for Muslims to trim their nails, 
+                shave their pubic hair, pluck their armpit hair, and trim their mustaches. 
+                Anas ibn Malik reported that the time limit was forty days.
+              </p>
+              <p className="mt-2 text-xs font-medium text-primary">
+                — Sahih Muslim 258
+              </p>
+            </div>
 
-        {/* Action buttons */}
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <HistoryDialog items={items} onClearHistory={clearHistory} />
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset All Records
-          </Button>
-        </div>
+            {/* Action buttons */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <HistoryDialog items={items} onClearHistory={clearHistory} />
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reset All Records
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Period Tracker Tab */}
+          <TabsContent value="period" className="mt-6">
+            <PeriodTracker />
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <footer className="mt-12 text-center">
