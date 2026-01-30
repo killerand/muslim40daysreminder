@@ -30,6 +30,7 @@ const GroomingCard = ({
   onUpdatePeriod,
 }: GroomingCardProps) => {
   const [localPeriod, setLocalPeriod] = useState(reminderPeriod);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const progress = Math.max(0, ((reminderPeriod - daysRemaining) / reminderPeriod) * 100);
   const isUrgent = daysRemaining <= 5;
   const isOverdue = daysRemaining <= 0;
@@ -37,9 +38,13 @@ const GroomingCard = ({
   const handleOpenChange = (open: boolean) => {
     if (open) {
       setLocalPeriod(reminderPeriod);
-    } else if (localPeriod !== reminderPeriod) {
-      onUpdatePeriod(localPeriod);
     }
+    setPopoverOpen(open);
+  };
+
+  const handleSave = () => {
+    onUpdatePeriod(localPeriod);
+    setPopoverOpen(false);
   };
 
   return (
@@ -51,7 +56,7 @@ const GroomingCard = ({
       )}
     >
       {/* Settings button */}
-      <Popover onOpenChange={handleOpenChange}>
+      <Popover open={popoverOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"
@@ -79,6 +84,9 @@ const GroomingCard = ({
             <p className="text-xs text-muted-foreground">
               Set a custom reminder period for {title.toLowerCase()}.
             </p>
+            <Button onClick={handleSave} size="sm" className="w-full">
+              Save
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
